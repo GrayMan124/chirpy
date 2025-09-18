@@ -22,4 +22,10 @@ func (cfg *apiConfig) metrics(w http.ResponseWriter, r *http.Request) {
 func (cfg *apiConfig) reset(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 	cfg.fileServerHits.Swap(0)
+	if cfg.Platform != "dev" {
+		w.WriteHeader(403)
+
+	} else {
+		cfg.Queries.Reset(r.Context())
+	}
 }

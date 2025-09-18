@@ -15,6 +15,7 @@ import _ "github.com/lib/pq"
 type apiConfig struct {
 	fileServerHits atomic.Int32
 	Queries        *database.Queries
+	Platform       string
 }
 
 func main() {
@@ -25,6 +26,8 @@ func main() {
 
 	cfg := apiConfig{}
 	cfg.Queries = dbQueries
+	cfg.Platform = os.Getenv("PLATFORM")
+
 	if err != nil {
 		log.Fatal("Failed to connect to DB")
 	}
@@ -40,6 +43,6 @@ func main() {
 	serveMux.Handle("GET /admin/metrics", http.HandlerFunc(cfg.metrics))
 	serveMux.Handle("POST /admin/reset", http.HandlerFunc(cfg.reset))
 	serveMux.Handle("POST /api/validate_chirp", http.HandlerFunc(validation))
+	serveMux.Handle("POST /api/users", http.HandlerFunc(cfg.addUser))
 	server.ListenAndServe()
-
 }

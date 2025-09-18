@@ -7,10 +7,9 @@ import (
 	"strings"
 )
 
-type chirp struct {
-	Body string `json:"body"`
-}
-
+//	type chirp struct {
+//		Body string `json:"body"`
+//	}
 type errorResponse struct {
 	Error string `json:"error"`
 }
