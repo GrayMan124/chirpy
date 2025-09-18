@@ -1,2 +1,2 @@
 -- name: Reset :exec 
-truncate table users;
+truncate table users CASCADE;

@@ -3,38 +3,51 @@ package main
 import (
 	"encoding/json"
 	"github.com/GrayMan124/chirpy/internal/chirp"
+	"github.com/GrayMan124/chirpy/internal/database"
 	"github.com/google/uuid"
 	"log"
 	"net/http"
 )
 
 func (cfg *apiConfig) SendChirp(w http.ResponseWriter, r *http.Request) {
-	type chirp struct {
+	type chirpJson struct {
 		Body   string    `json:"body"`
 		UserId uuid.UUID `json:"user_id"`
 	}
 	decoder := json.NewDecoder(r.Body)
-	c := chirp{}
+	c := chirpJson{}
 	err := decoder.Decode(&c)
 	if err != nil {
 		w.WriteHeader(505)
 		return
 	}
 
-	chirpBody, valid := ValidateChirp(c.Body)
+	chirpBody, valid := chirp.ValidateChirp(c.Body)
 	if !valid {
-		w.WriteHeader(505)
+		w.WriteHeader(506)
 		return
 	}
-
-	output := validResponse{
-		CleanedBody: replaceWords(c.Body),
+	c.Body = chirpBody
+	createdChirp, err := cfg.Queries.InsertChirp(r.Context(), database.InsertChirpParams{Body: c.Body, UserID: c.UserId})
+	if err != nil {
+		w.WriteHeader(507)
+		return
 	}
-	w.WriteHeader(200)
-	out, err := json.Marshal(output)
+	returnChirp := chirp.Chirp{
+		ID:        createdChirp.ID,
+		CreatedAt: createdChirp.CreatedAt,
+		UpdatedAt: createdChirp.CreatedAt,
+		Body:      createdChirp.Body,
+		UserID:    createdChirp.UserID,
+	}
+
+	out, err := json.Marshal(returnChirp)
 	if err != nil {
 		log.Fatal("failed marshalling")
+		w.WriteHeader(508)
+		return
 	}
+	w.WriteHeader(201)
 	w.Write(out)
 	w.Header().Set("Content-Type", "application/json")
 

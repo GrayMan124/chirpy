@@ -10,7 +10,7 @@ import (
 )
 
 const reset = `-- name: Reset :exec
-truncate table users
+truncate table users CASCADE
 `
 
 func (q *Queries) Reset(ctx context.Context) error {

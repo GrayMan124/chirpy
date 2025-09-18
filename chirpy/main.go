@@ -42,7 +42,9 @@ func main() {
 	serveMux.Handle("GET /api/healthz", http.HandlerFunc(readiness))
 	serveMux.Handle("GET /admin/metrics", http.HandlerFunc(cfg.metrics))
 	serveMux.Handle("POST /admin/reset", http.HandlerFunc(cfg.reset))
-	serveMux.Handle("POST /api/validate_chirp", http.HandlerFunc(validation))
+	serveMux.Handle("POST /api/chirps", http.HandlerFunc(cfg.SendChirp))
 	serveMux.Handle("POST /api/users", http.HandlerFunc(cfg.addUser))
+	serveMux.Handle("GET /api/chirps", http.HandlerFunc(cfg.apiGetChirps))
+	serveMux.Handle("GET /api/chirps/{chirp_id}", http.HandlerFunc(cfg.apiGetChirp))
 	server.ListenAndServe()
 }

@@ -1,9 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"log"
-	"net/http"
 	"strings"
 )
 
@@ -29,49 +26,49 @@ func replaceWords(input string) string {
 	return strings.Join(split, " ")
 }
 
-func validation(w http.ResponseWriter, r *http.Request) {
-
-	decoder := json.NewDecoder(r.Body)
-	c := chirp{}
-	err := decoder.Decode(&c)
-	if err != nil {
-		output := errorResponse{
-			Error: "Something went wrong",
-		}
-		w.WriteHeader(500)
-		out, err := json.Marshal(output)
-		if err != nil {
-			log.Fatal("failed marshalling")
-		}
-		w.Write(out)
-		w.Header().Set("Content-Type", "application/json")
-		return
-	}
-
-	if len(c.Body) > 140 {
-
-		output := errorResponse{
-			Error: "Chirp is too long",
-		}
-		w.WriteHeader(400)
-		out, err := json.Marshal(output)
-		if err != nil {
-			log.Fatal("failed marshalling")
-		}
-		w.Write(out)
-		w.Header().Set("Content-Type", "application/json")
-		return
-	}
-
-	output := validResponse{
-		CleanedBody: replaceWords(c.Body),
-	}
-	w.WriteHeader(200)
-	out, err := json.Marshal(output)
-	if err != nil {
-		log.Fatal("failed marshalling")
-	}
-	w.Write(out)
-	w.Header().Set("Content-Type", "application/json")
-
-}
+// func validation(w http.ResponseWriter, r *http.Request) {
+//
+// 	decoder := json.NewDecoder(r.Body)
+// 	c := chirp{}
+// 	err := decoder.Decode(&c)
+// 	if err != nil {
+// 		output := errorResponse{
+// 			Error: "Something went wrong",
+// 		}
+// 		w.WriteHeader(500)
+// 		out, err := json.Marshal(output)
+// 		if err != nil {
+// 			log.Fatal("failed marshalling")
+// 		}
+// 		w.Write(out)
+// 		w.Header().Set("Content-Type", "application/json")
+// 		return
+// 	}
+//
+// 	if len(c.Body) > 140 {
+//
+// 		output := errorResponse{
+// 			Error: "Chirp is too long",
+// 		}
+// 		w.WriteHeader(400)
+// 		out, err := json.Marshal(output)
+// 		if err != nil {
+// 			log.Fatal("failed marshalling")
+// 		}
+// 		w.Write(out)
+// 		w.Header().Set("Content-Type", "application/json")
+// 		return
+// 	}
+//
+// 	output := validResponse{
+// 		CleanedBody: replaceWords(c.Body),
+// 	}
+// 	w.WriteHeader(200)
+// 	out, err := json.Marshal(output)
+// 	if err != nil {
+// 		log.Fatal("failed marshalling")
+// 	}
+// 	w.Write(out)
+// 	w.Header().Set("Content-Type", "application/json")
+//
+// }
