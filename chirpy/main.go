@@ -16,6 +16,7 @@ type apiConfig struct {
 	fileServerHits atomic.Int32
 	Queries        *database.Queries
 	Platform       string
+	secret         string
 }
 
 func main() {
@@ -27,7 +28,7 @@ func main() {
 	cfg := apiConfig{}
 	cfg.Queries = dbQueries
 	cfg.Platform = os.Getenv("PLATFORM")
-
+	cfg.secret = os.Getenv("SECRET")
 	if err != nil {
 		log.Fatal("Failed to connect to DB")
 	}

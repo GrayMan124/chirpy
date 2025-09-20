@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/GrayMan124/chirpy/internal/auth"
 	"github.com/GrayMan124/chirpy/internal/chirp"
 	"github.com/GrayMan124/chirpy/internal/database"
 	"github.com/google/uuid"
@@ -14,11 +15,22 @@ func (cfg *apiConfig) SendChirp(w http.ResponseWriter, r *http.Request) {
 		Body   string    `json:"body"`
 		UserId uuid.UUID `json:"user_id"`
 	}
+	token, err := auth.GetBearerToken(r.Header)
+	if err != nil {
+		log.Fatal("Failed to get the bearer token")
+		return
+	}
 	decoder := json.NewDecoder(r.Body)
 	c := chirpJson{}
-	err := decoder.Decode(&c)
-	if err != nil {
+	erro := decoder.Decode(&c)
+	if erro != nil {
 		w.WriteHeader(505)
+		return
+	}
+
+	userAuth, err := auth.ValidateJWT(token, cfg.secret)
+	if err != nil {
+		w.WriteHeader(401)
 		return
 	}
 
@@ -28,7 +40,7 @@ func (cfg *apiConfig) SendChirp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	c.Body = chirpBody
-	createdChirp, err := cfg.Queries.InsertChirp(r.Context(), database.InsertChirpParams{Body: c.Body, UserID: c.UserId})
+	createdChirp, err := cfg.Queries.InsertChirp(r.Context(), database.InsertChirpParams{Body: c.Body, UserID: userAuth})
 	if err != nil {
 		w.WriteHeader(507)
 		return
