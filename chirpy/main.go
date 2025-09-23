@@ -48,5 +48,7 @@ func main() {
 	serveMux.Handle("POST /api/users", http.HandlerFunc(cfg.addUser))
 	serveMux.Handle("GET /api/chirps", http.HandlerFunc(cfg.apiGetChirps))
 	serveMux.Handle("GET /api/chirps/{chirp_id}", http.HandlerFunc(cfg.apiGetChirp))
+	serveMux.Handle("POST /api/refresh", http.HandlerFunc(cfg.RefreshToken))
+	serveMux.Handle("POST /api/revoke", http.HandlerFunc(cfg.RevokeToken))
 	server.ListenAndServe()
 }

@@ -1,9 +1,10 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"github.com/GrayMan124/chirpy/internal/auth"
-	// "github.com/GrayMan124/chirpy/internal/database"
+	"github.com/GrayMan124/chirpy/internal/database"
 	"log"
 	"net/http"
 	"time"
@@ -13,7 +14,6 @@ func (cfg *apiConfig) loginUser(w http.ResponseWriter, r *http.Request) {
 	type user struct {
 		Password string `json:"password"`
 		Email    string `json:"email"`
-		ExpireIn int    `json:"expires_in_seconds"`
 	}
 	decoder := json.NewDecoder(r.Body)
 	usr := user{}
@@ -33,21 +33,30 @@ func (cfg *apiConfig) loginUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(401)
 		return
 	}
-	expires := min(3600, usr.ExpireIn)
-	if expires == 0 {
-		expires = 3600
-	}
+	expires := 3600
 	token, err := auth.MakeJWT(usrData.ID, cfg.secret, time.Duration(expires)*time.Second)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
+	refreshToken, err := auth.MakeRefreshToken()
+	if err != nil {
+		w.WriteHeader(500)
+		log.Fatal("Failed to generate refresh token")
+		return
+	}
+	cfg.Queries.InsertRefreshToken(r.Context(), database.InsertRefreshTokenParams{Token: refreshToken,
+		UserID:    usrData.ID,
+		ExpiresAt: sql.NullTime{Time: time.Now().Add(time.Duration(1440) * time.Hour), Valid: true},
+		RevokedAt: sql.NullTime{Valid: false},
+	})
 	createdUser := User{
-		ID:        usrData.ID,
-		CreatedAt: usrData.CreatedAt,
-		UpdatedAt: usrData.UpdatedAt,
-		Email:     usrData.Email,
-		Token:     token,
+		ID:           usrData.ID,
+		CreatedAt:    usrData.CreatedAt,
+		UpdatedAt:    usrData.UpdatedAt,
+		Email:        usrData.Email,
+		Token:        token,
+		RefreshToken: refreshToken,
 	}
 
 	w.WriteHeader(200)
